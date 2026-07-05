@@ -12,21 +12,27 @@ sudo docker network create <NETWORK_NAME>
 ```
 ## Docker 
 ```bash
-sudo docker run -d --name <CONTAINER_NAME> \
-  --network <NETWORK_NAME> \
-  -p <HOST_PORT>:8080 \
+sudo docker run -d --name keycloak \
+  --restart=always \
+  --network keycloak-network \
+  -p 8080:8080 \
   -e KC_DB=postgres \
-  -e KC_DB_URL=jdbc:postgresql://<DB_HOST>:<DB_PORT>/<DB_NAME> \
-  -e KC_DB_USERNAME=<DB_USERNAME> \
-  -e KC_DB_PASSWORD=<DB_PASSWORD> \
-  -e KC_DB_SCHEMA=<DB_SCHEMA> \
-  -e KC_PROXY=edge \
-  -e KC_PROXY_HEADERS=xforwarded \
-  -e KC_HOSTNAME=<HOSTNAME> \
+  -e KC_DB_URL=jdbc:postgresql://103.49.131.57:5432/mydb \
+  -e KC_DB_USERNAME=myuser \
+  -e KC_DB_PASSWORD=sourav \
+  -e KC_DB_SCHEMA=keycloak \
+  -e KC_HTTP_ENABLED=true \
+  -e KC_PROXY=edge  \
+  -e KC_HOSTNAME=login.sourav.fun \
   -e KC_HOSTNAME_STRICT=false \
-  -e KC_BOOTSTRAP_ADMIN_USERNAME=<ADMIN_USERNAME> \
-  -e KC_BOOTSTRAP_ADMIN_PASSWORD=<ADMIN_PASSWORD> \
-  quay.io/keycloak/keycloak:<KEYCLOAK_VERSION> start
+  -e KC_HOSTNAME_STRICT_HTTPS=false \
+  -e KC_HTTP_PORT=8080 \
+  -e KC_HOSTNAME_ADMIN_URL=https://login.sourav.fun \
+  -e KC_HOSTNAME_URL=https://login.sourav.fun \
+  -e KC_BOOTSTRAP_ADMIN_USERNAME=admin \
+  -e KC_BOOTSTRAP_ADMIN_PASSWORD=Admin@123 \
+  quay.io/keycloak/keycloak:26.0.0 start
+
 ```
 ## check logs
 ```sh
@@ -46,10 +52,10 @@ sudo nano /etc/nginx/sites-available/<HOSTNAME>
 
 server {
     listen 80;
-    server_name <HOSTNAME>;
+    server_name login.sourav.fun;
 
     location / {
-        proxy_pass http://127.0.0.1:<HOST_PORT>;
+        proxy_pass http://127.0.0.1:8080;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -57,8 +63,7 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_set_header X-Forwarded-Host $host;
         proxy_set_header Upgrade $http_upgrade;
-        # proxy_set_header Connection "upgrade";
-        proxy_set_header Connection $connection_upgrade;
+        proxy_set_header Connection "upgrade";  # Fixed this line
     }
 }
 
