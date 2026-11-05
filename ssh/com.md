@@ -90,3 +90,13 @@ To manually unban an IP address:
 ```sh
 sudo fail2ban-client set sshd unbanip <ip_address>
 ```
+
+### Useful Fail2ban commands
+```text
+Check status	fail2ban-client status
+Check SSH jail	fail2ban-client status sshd
+View logs	tail -f /var/log/fail2ban.log
+List banned IPs	fail2ban-client get sshd banip
+Unban an IP	fail2ban-client set sshd unbanip IP
+Restart service	systemctl restart fail2ban
+```
